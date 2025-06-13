@@ -42,7 +42,7 @@ const Tasks = ({ onAdd, onDelete, tasks }) => {
               >
                 <span>{task.text}</span>
                 <button
-                  onClick={onDelete}
+                  onClick={() => onDelete(task.id)}
                   className='text-stone-700 hover:text-red-500'
                 >
                   Clear
