@@ -1,13 +1,41 @@
+import { useState } from 'react';
+
 import ProjectSIdebar from './components/ProjectSIdebar';
 import NewProject from './components/NewProject';
 import NoProjectSelected from './components/NoProjectSelected';
-import { useState } from 'react';
+import ProjectDetails from './components/ProjectDetails';
 
 function App() {
   const [projectState, setProjectState] = useState({
     selectedProjectID: undefined,
     projects: [],
+    tasks: [],
   });
+
+  function handleAddTask(text) {
+    setProjectState((prevState) => {
+      const newTask = {
+        text: text,
+        id: Math.random(),
+        projectId: prevState.selectedProjectID,
+      };
+      return {
+        ...prevState,
+        tasks: [...prevState.tasks, newTask],
+      };
+    });
+  }
+
+  function handleDeleteTask() {
+    setProjectState((prevState) => {
+      return {
+        ...prevState,
+        tasks: prevState.tasks.filter(
+          (task) => task.projectId !== prevState.selectedProjectID
+        ),
+      };
+    });
+  }
 
   function handleStartAddProject() {
     setProjectState((prevState) => {
@@ -23,12 +51,13 @@ function App() {
       const newProject = { ...projectData, id: Math.random() };
       return {
         ...prevState,
+        selectedProjectID: undefined,
         projects: [...prevState.projects, newProject],
       };
     });
   }
 
-  function closeProjects() {
+  function handleCancelAddProject() {
     setProjectState((prevState) => {
       return {
         ...prevState,
@@ -37,10 +66,42 @@ function App() {
     });
   }
 
-  let content;
+  function handleSelectProject(id) {
+    setProjectState((prevState) => {
+      return {
+        ...prevState,
+        selectedProjectID: id,
+      };
+    });
+  }
 
+  function handleDeleteProject() {
+    setProjectState((prevState) => {
+      return {
+        ...prevState,
+        selectedProjectID: undefined,
+        projects: prevState.projects.filter(
+          (project) => project.id !== prevState.selectedProjectID
+        ),
+      };
+    });
+  }
+
+  let content = (
+    <ProjectDetails
+      onAddTask={handleAddTask}
+      onDeleteTask={handleDeleteTask}
+      onDelete={handleDeleteProject}
+      project={projectState.projects.find(
+        (proj) => proj.id === projectState.selectedProjectID
+      )}
+      tasks={projectState.tasks}
+    />
+  );
   if (projectState.selectedProjectID === null) {
-    content = <NewProject onClose={closeProjects} onAdd={handleAddProject} />;
+    content = (
+      <NewProject onCancel={handleCancelAddProject} onAdd={handleAddProject} />
+    );
   } else if (projectState.selectedProjectID === undefined) {
     content = <NoProjectSelected onStartAddProject={handleStartAddProject} />;
   }
@@ -50,6 +111,8 @@ function App() {
       <ProjectSIdebar
         projects={projectState.projects}
         onStartAddProject={handleStartAddProject}
+        onSelect={handleSelectProject}
+        selectedProjectID={projectState.selectedProjectID}
       />
       {content}
     </main>
